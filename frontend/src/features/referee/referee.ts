@@ -90,15 +90,14 @@ export default class Referee {
    * @returns true if victim is being attacked.
    */
   private isAttacking(attacker: string, attackerPosition: [number, number], victim: string, victimPosition: [number, number]) {
-    let pieceColour = this.getPieceColour(attacker);
     let pieceType = this.getPieceType(attacker);
-    const isWhite = pieceColour === "white";
-    const dir = isWhite ? 1 : -1;
+    let isWhite = this.getPieceColour(attacker) === "white";
     // Creates a set to keep track of attacked pieces.
-    let attackedPieces = new Set<String>();
+    let attackedPieces = new Set<string>();
 
     switch (pieceType) {
       case "pawn":
+        this.getAttackingPawn(isWhite, attackedPieces, attackerPosition);
         break;
       case "rook":
         break;
@@ -112,6 +111,7 @@ export default class Referee {
         break;
     }
     
+    //console.log([...attackedPieces])
     return attackedPieces.has(victim);
   }
 
@@ -145,6 +145,7 @@ export default class Referee {
         if (piece && this.getPieceColour(piece) === enemyColour) {
           let isAttacked = this.isAttacking(piece, [x, y], pieceName, [kingX, kingY]);
           if (isAttacked) {
+            console.log("King is in check")
             return true;
           }
         }
@@ -212,6 +213,16 @@ export default class Referee {
   private getStep(prev: number, next: number): number {
     if (prev === next) return 0;
     return next > prev ? 1 : -1;
+  }
+
+  /**
+   * Checks if a specified position is out of bounds.
+   * @param x x-position
+   * @param y y-position
+   * @returns true or false.
+   */
+  private isInBounds(x: number, y: number) {
+    return x >= 0 && x <= 7 && y >= 0 && y <= 7;
   }
 
   /**
@@ -346,11 +357,35 @@ export default class Referee {
 
   /**
    * Fills a set up with pieces that the pawn is attacking.
+   * @param isWhite - Whether the attacking piece is white or not.
    * @param attackedPieces - Set that stores pieces being attacked.
    * @param position - [x, y] position of the attacker.
    */
-  private getAttackingPawn(attackedPieces: Set<string>, position: [number, number]) {
-    
+  private getAttackingPawn(isWhite: boolean, attackedPieces: Set<string>, position: [number, number]) {
+    const dir = isWhite ? 1 : -1;
+    const [x, y] = position;
+
+    // Check left and right diagonals.
+    const leftX = x-1;
+    const leftY = y+dir;
+
+    const rightX = x+1 
+    const rightY = y+dir;
+
+    if (this.isInBounds(leftX, leftY)) {
+      let attackedPiece = this.board[rightY][rightX]
+      if (attackedPiece) {
+        attackedPieces.add(attackedPiece)
+      }
+    }
+
+    if (this.isInBounds(rightX, rightY)) {
+      let attackedPiece = this.board[rightY][rightX]
+      if (attackedPiece) {
+        attackedPieces.add(attackedPiece)
+      }
+    }
+
   }
 
 }
