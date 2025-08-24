@@ -100,10 +100,14 @@ export default class Referee {
         this.getAttackingPawn(isWhite, attackedPieces, attackerPosition);
         break;
       case "rook":
+        console.log("Checking rook.")
+        this.getAttackingRook(isWhite, attackedPieces, attackerPosition);
         break;
       case "bishop":
+        this.getAttackingBishop(isWhite, attackedPieces, attackerPosition);
         break;
       case "queen":
+        this.getAttackingQueen(isWhite, attackedPieces,attackerPosition)
         break;
       case "knight":
         break;
@@ -216,7 +220,7 @@ export default class Referee {
   }
 
   /**
-   * Checks if a specified position is out of bounds.
+   * Checks if a specified position is in bounds.
    * @param x x-position
    * @param y y-position
    * @returns true or false.
@@ -385,7 +389,85 @@ export default class Referee {
         attackedPieces.add(attackedPiece)
       }
     }
+  }
+
+  /**
+   * Fills a set up with pieces that the rook is attacking.
+   * @param isWhite - Whether the attacking piece is white or not.
+   * @param attackedPieces - Set that stores pieces being attacked.
+   * @param position - [x, y] position of the attacker.
+   */
+  private getAttackingRook(isWhite: boolean, attackedPieces: Set<string>, position: [number, number]) {
+    const dir = [[1, 0], [-1,0], [0, 1], [0, -1]]
+    const [x, y] = position;
+
+    // Check tiles in directions specified by dir until blocked or out of bounds.
+
+    for (const [dx, dy] of dir) {
+      let newX = x+dx;
+      let newY = y+dy;
+
+      while (this.isInBounds(newX, newY)) {
+        // Attacked piece
+        const piece = this.board[newY][newX]
+        if (piece) {
+          const pieceIsWhite = this.getPieceColour(piece) === "white"
+          if (isWhite !== pieceIsWhite) {
+            attackedPieces.add(piece);
+          }
+          break; // If a piece is encountered, we move onto the next direction.
+        }
+
+        newX += dx;
+        newY += dy;
+      }
+    }
 
   }
+
+  /**
+   * Fills a set up with pieces that the bishop is attacking.
+   * @param isWhite - Whether the attacking piece is white or not.
+   * @param attackedPieces - Set that stores pieces being attacked.
+   * @param position - [x, y] position of the attacker.
+   */
+  private getAttackingBishop(isWhite: boolean, attackedPieces: Set<string>, position: [number, number]) {
+    const dir = [[1, 1], [-1,-1], [1, -1], [1, -1]]
+    const [x, y] = position;
+
+    // Check tiles in directions specified by dir until blocked or out of bounds.
+    for (const [dx, dy] of dir) {
+      let newX = x+dx;
+      let newY = y+dy;
+
+      while (this.isInBounds(newX, newY)) {
+        // Attacked piece
+        const piece = this.board[newY][newX]
+        if (piece) {
+          const pieceIsWhite = this.getPieceColour(piece) === "white"
+          if (isWhite !== pieceIsWhite) {
+            attackedPieces.add(piece);
+          }
+          break; // If a piece is encountered, we move onto the next direction.
+        }
+
+        newX += dx;
+        newY += dy;
+      }
+    }
+  }
+
+  /**
+   * Fills a set up with pieces that the queen is attacking.
+   * @param isWhite - Whether the attacking piece is white or not.
+   * @param attackedPieces - Set that stores pieces being attacked.
+   * @param position - [x, y] position of the attacker.
+   */
+  private getAttackingQueen(isWhite: boolean, attackedPieces: Set<string>, position: [number, number]) {
+    this.getAttackingRook(isWhite, attackedPieces, position)
+    this.getAttackingBishop(isWhite, attackedPieces, position)
+  }
+
+  
 
 }
