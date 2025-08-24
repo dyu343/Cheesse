@@ -48,6 +48,8 @@ export default class Referee {
       return false;
     }
 
+    this.isKingChecked(true);
+
     // Validate the move based on the piece type
     switch (piece) {
       case "pawn_white":
@@ -82,6 +84,42 @@ export default class Referee {
   }
 
   /**
+   * Determines if there is a king being checked.
+   * @param isWhite - Is the player moving White
+   * 
+   * @returns Whether the player's king is in check.
+   */
+  private isKingChecked(isWhite: boolean) {
+    let pieceName = isWhite ? "king_white" : "king_black";
+
+    const kingPos = this.findPiece(pieceName);
+    if (!kingPos) {
+      return false;
+    }
+
+    const [y, x] = kingPos;
+    console.log(`${pieceName}: ${y}, ${x}`);
+
+  }
+
+  /**
+   * Iterates through an 8x8 chess board to find the piece specified in the parameter.
+   * @param piece PieceName in Board.tsx.
+   * @returns [y][x] (row, column) positions of the piece.
+   * @returns null if piece is not found.
+   */
+  private findPiece(piece: string) {
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        if (this.board[y][x] === piece) {
+          return [y, x];
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * Determines if two pieces belong to the same player.
    *
    * @param piece - The piece being moved.
@@ -109,15 +147,25 @@ export default class Referee {
 
   /**
    * Checks if the path is clear for a piece to move.
-   * 
+   * @param startPos - Optional parameter specifying the starting position.
+   * @param endPos - Optional parameter specifying the ending position.
    * @returns Whether the path is clear.
    */
-  private isPathClear(): boolean {
-    const stepX = this.getStep(this.prevX, this.newX);
-    const stepY = this.getStep(this.prevY, this.newY);
+  private isPathClear(
+    startPos?: [number, number],
+    endPos?: [number, number]
+  ): boolean {
 
-    let x = this.prevX + stepX;
-    let y = this.prevY + stepY;
+    // positionSpecified checks if optional positional parameters are fully passed in or not.
+    const [startX, startY] = startPos ?? [undefined, undefined];
+    const [endX, endY] = endPos ?? [undefined, undefined]; 
+    const positionSpecified = startX && startY && endX && endY;
+
+    const stepX = positionSpecified ? this.getStep(startX, endX) : this.getStep(this.prevX, this.newX);
+    const stepY = positionSpecified ? this.getStep(startY, endY) : this.getStep(this.prevY, this.newY);
+
+    let x = positionSpecified ? startX + stepX : this.prevX + stepX;
+    let y = positionSpecified ? startY + endY : this.prevY + stepY;
 
     // Check for obstacles in the path
     while (x !== this.newX || y !== this.newY) {
