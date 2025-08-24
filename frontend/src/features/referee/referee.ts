@@ -84,35 +84,86 @@ export default class Referee {
   }
 
   /**
+   * @param attacker - Piece that is attacking
+   * @param attackerPosition - Current position of attacker [x, y].
+   * @param victim - Piece being attacked
+   * @returns true if victim is being attacked.
+   */
+  private isAttacking(attacker: string, attackerPosition: [number, number], victim: string, victimPosition: [number, number]) {
+    let pieceColour = this.getPieceColour(attacker);
+    let pieceType = this.getPieceType(attacker);
+    const isWhite = pieceColour === "white";
+    const dir = isWhite ? 1 : -1;
+    // Creates a set to keep track of attacked pieces.
+    let attackedPieces = new Set<String>();
+
+    switch (pieceType) {
+      case "pawn":
+        break;
+      case "rook":
+        break;
+      case "bishop":
+        break;
+      case "queen":
+        break;
+      case "knight":
+        break;
+      case "king":
+        break;
+    }
+    
+    return attackedPieces.has(victim);
+  }
+
+  /**
    * Determines if there is a king being checked.
    * @param isWhite - Is the player moving White
    * 
    * @returns Whether the player's king is in check.
    */
   private isKingChecked(isWhite: boolean) {
-    let pieceName = isWhite ? "king_white" : "king_black";
-
-    const kingPos = this.findPiece(pieceName);
-    if (!kingPos) {
-      return false;
+    let pieceName;
+    let enemyColour;
+    if (isWhite) {
+      pieceName = "king_white";
+      enemyColour = "black";
+    } else {
+      pieceName = "king_black";
+      enemyColour = "white";
     }
 
-    const [y, x] = kingPos;
-    console.log(`${pieceName}: ${y}, ${x}`);
+    const kingPosition = this.findPiece(pieceName);
+    if (!kingPosition) {
+      return false;
+    }
+    const [kingX, kingY] = kingPosition;
 
+    // Check if King is being attacked.
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        let piece = this.board[y][x];
+        if (piece && this.getPieceColour(piece) === enemyColour) {
+          let isAttacked = this.isAttacking(piece, [x, y], pieceName, [kingX, kingY]);
+          if (isAttacked) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   /**
    * Iterates through an 8x8 chess board to find the piece specified in the parameter.
    * @param piece PieceName in Board.tsx.
-   * @returns [y][x] (row, column) positions of the piece.
+   * @returns [x][y] (column, row) positions of the piece.
    * @returns null if piece is not found.
    */
   private findPiece(piece: string) {
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
         if (this.board[y][x] === piece) {
-          return [y, x];
+          return [x, y];
         }
       }
     }
@@ -131,6 +182,24 @@ export default class Referee {
     const pieceColor = piece.split('_')[1];
     const destColor = destPiece.split('_')[1];
     return pieceColor === destColor;
+  }
+
+  /**
+   * Gets a piece's colour.
+   * @param piece the piece's name e.g. king_white
+   * @returns either "white" or "black".
+   */
+  private getPieceColour(piece : string) {
+    return piece.split('_')[1];
+  }
+
+  /**
+   * Gets a piece's type.
+   * @param piece the piece's name e.g. king_white
+   * @returns piece type. e.g. "king"
+   */
+  private getPieceType(piece : string) {
+    return piece.split('_')[0];
   }
 
   /**
@@ -273,4 +342,15 @@ export default class Referee {
     // King moves one square in any direction
     return Math.abs(dx) <= 1 && Math.abs(dy) <= 1;
   }
+
+
+  /**
+   * Fills a set up with pieces that the pawn is attacking.
+   * @param attackedPieces - Set that stores pieces being attacked.
+   * @param position - [x, y] position of the attacker.
+   */
+  private getAttackingPawn(attackedPieces: Set<string>, position: [number, number]) {
+    
+  }
+
 }
